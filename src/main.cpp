@@ -3,20 +3,18 @@
  */
 
 #include <Arduino.h>
+#include "ir.hpp"
 
 void setup()
 {
-  pinMode(PC13, INPUT);
-  Serial.begin(115200);
-  pinMode(PA1, OUTPUT);
+  pinMode(PC13, OUTPUT);
 }
+IR remote(PC15, false);
 
-int i = 1;
 void loop()
 {
-  delay(20);
-  int16_t val = analogRead(A0);
-  Serial.print("Value: ");
-  Serial.println(val);
-  analogWrite(PA1,val>>2);
+  digitalWrite(PC13, LOW);
+  remote.tx(0x4040);
+  digitalWrite(PC13, HIGH);
+  delay(1000);
 }
