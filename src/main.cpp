@@ -3,20 +3,22 @@
  */
 
 #include <Arduino.h>
+#include <Adafruit_SI5351.h>
+
+Adafruit_SI5351 clk;
 
 void setup()
 {
-  pinMode(PC13, INPUT);
-  Serial.begin(115200);
-  pinMode(PA1, OUTPUT);
+	Serial.begin(115200);
+	clk.begin();
+	clk.setupPLLInt(SI5351_PLL_A, 24); // 600MHz
 }
 
-int i = 1;
+int i = 8;
 void loop()
 {
-  delay(20);
-  int16_t val = analogRead(A0);
-  Serial.print("Value: ");
-  Serial.println(val);
-  analogWrite(PA1,val>>2);
+	clk.setupMultisynth(0, SI5351_PLL_A, i, 0, 1);
+	++i;
+	Serial.println(i);
+	delay(1000);
 }
