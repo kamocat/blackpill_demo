@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <Adafruit_SI5351.h>
+#include <sstream>
 
 Adafruit_SI5351 clk;
 
@@ -16,14 +17,23 @@ int log2(unsigned int x){
 err_t set_freq(double hz){
 	double pll = 600E6;
 	double ratio = pll / hz;
-	int div = ratio / 1024;
+	int div = ratio / 1000;
 	div = log2(div);
 	ratio /= 1<<div;
 	int a,b,c;
 	a = ratio;
 	ratio -= a;
-	c = 1<<18;
-	b = div * c;
+	c = 1<<19;
+	b = ratio * c;
+#ifdef DEBUG
+	Serial.print("A ");
+	Serial.print(a);
+	Serial.print(" B ");
+	Serial.print(b);
+	Serial.print(" C ");
+	Serial.println(c);
+#endif
+
 	clk.setupRdiv(0, si5351RDiv_t(div));
 	ASSERT_STATUS(clk.setupMultisynth(0, SI5351_PLL_A, a, b, c));
 	return ERROR_NONE;
@@ -35,17 +45,17 @@ void print_error(err_t e){
 			Serial.println("OK");
 			break;
 		case ERROR_OPERATIONTIMEDOUT:
-			Serial.print("Timeout");
+			Serial.println("Timeout");
 			break;
 		case ERROR_INVALIDPARAMETER:
-			Serial.print("Bad parameter");
+			Serial.println("Bad parameter");
 			break;
 		case ERROR_UNEXPECTEDVALUE:
-			Serial.print("Unexpected value");
+			Serial.println("Unexpected value");
 			break;
 		default:
 			Serial.print("Other error ");
-			Serial.print(e, HEX);
+			Serial.println(e, HEX);
 			break;
 	}
 }
@@ -60,11 +70,15 @@ void setup()
 void loop()
 {
 	double hz = Serial.parseFloat();
-	if( hz > 0. ){
-		Serial.print(hz);
+	if( hz > 0.00235 ){
+		Serial.print(hz, 6);
 		Serial.print(" MHz... ");
 		err_t e = set_freq(hz * 1e6);
 		print_error(e);
 		clk.enableOutputs(true);
+	} else if(hz > 0.){
+		Serial.println("Minimum frequency is 0.00235 MHz");
+	} else {
+		// Serial timed out, retry
 	}
 }
