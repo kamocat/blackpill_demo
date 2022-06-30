@@ -11,14 +11,15 @@ void setup()
 {
 	Serial.begin(115200);
 	clk.begin();
-	clk.setupPLLInt(SI5351_PLL_A, 24); // 600MHz
+	clk.setupPLLInt(SI5351_PLL_A, 36); // 900MHz
 }
 
 int i = 8;
 void loop()
 {
 	clk.setupMultisynth(0, SI5351_PLL_A, i, 0, 1);
-	++i;
+	clk.enableOutputs(true);
 	Serial.println(i);
 	delay(1000);
+	++i;
 }
