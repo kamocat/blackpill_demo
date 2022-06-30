@@ -7,6 +7,18 @@
 
 Adafruit_SI5351 clk;
 
+void set_freq(double hz){
+	double pll = 900E6;
+	double div = pll / hz;
+	int a,b,c;
+	a = div;
+	div -= a;
+	c = 1<<18;
+	b = div * c;
+	clk.setupMultisynth(0, SI5351_PLL_A, a, b, c);
+}
+	
+
 void setup()
 {
 	Serial.begin(115200);
@@ -14,12 +26,12 @@ void setup()
 	clk.setupPLLInt(SI5351_PLL_A, 36); // 900MHz
 }
 
-int i = 8;
+double i = 1E6;
 void loop()
 {
-	clk.setupMultisynth(0, SI5351_PLL_A, i, 0, 1);
+	set_freq(i);
 	clk.enableOutputs(true);
 	Serial.println(i);
 	delay(1000);
-	++i;
+	i += 1000;
 }
